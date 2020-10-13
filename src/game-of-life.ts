@@ -1,14 +1,14 @@
 export type Grid = boolean[][];
 export type Coordinate = [number, number];
 
-export function generateGrid(size: number): Grid {
-  return Array.from(Array(size)).map((_) =>
-    Array.from(Array(size)).map((_) => randomBoolean())
+export function generateGrid(width: number, height: number): Grid {
+  return Array.from(Array(height)).map((_) =>
+    Array.from(Array(width)).map((_) => randomBoolean())
   );
 }
 
 function randomBoolean() {
-  return Math.random() > 0.9;
+  return Math.random() > 0.5;
 }
 
 export function takeTurn(grid: Grid): Grid {
