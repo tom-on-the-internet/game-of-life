@@ -1,0 +1,17 @@
+:root {
+  --cell-size: 20px;
+}
+
+.grid {
+  display: flex;
+  .row {
+    .cell {
+      border: solid 1px grey;
+      height: var(--cell-size);
+      width: var(--cell-size);
+      &.alive {
+        background-color: green;
+      }
+    }
+  }
+}

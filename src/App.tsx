@@ -1,25 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import useInterval from "@use-it/interval";
+
+import "./App.scss";
+import { generateGrid, Grid, takeTurn } from "./game-of-life";
+
+const GRID_SIZE = 50;
+const initialGrid = generateGrid(GRID_SIZE);
 
 function App() {
+  const [grid, setGrid] = useState<Grid>(initialGrid);
+  const [turn, setTurn] = useState<number>(1);
+
+  useInterval(() => {
+    setGrid(takeTurn(grid));
+    setTurn(turn + 1);
+  }, 100);
+
+  console.log("rendering");
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <h2>Turn #: {turn}</h2>
+      <div className="grid">
+        {grid.map((row) => (
+          <div className="row">
+            {row.map((isAlive) => (
+              <div className={`cell ${isAlive ? "alive" : ""}`}></div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
