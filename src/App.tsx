@@ -72,9 +72,10 @@ function App() {
 
   return (
     <>
+      <h1>Conway's Game of Life</h1>
+      <h2>Implemented by Tom on the Internet</h2>
       <div>
         <div>
-          Turn #: {turn}{" "}
           <button onClick={() => setIsActive(true)}>Start</button>
           <button onClick={() => setIsActive(false)}>Stop</button>
           <button onClick={() => reinitialize(height, width)}>
@@ -127,6 +128,7 @@ function App() {
             />
           </label>
         </div>
+        <div>Turn #: {turn} </div>
       </div>
 
       <div className="grid">
