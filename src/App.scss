@@ -3,8 +3,8 @@
 }
 
 .grid {
-  display: flex;
   .row {
+    display: flex;
     .cell {
       border: solid 1px grey;
       height: var(--cell-size);

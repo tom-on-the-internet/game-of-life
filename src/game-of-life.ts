@@ -26,7 +26,7 @@ function isOutOfBounds(
     rowIndex < 0 ||
     cellIndex < 0 ||
     rowIndex >= grid.length ||
-    cellIndex >= grid.length
+    cellIndex >= grid[0].length
   );
 }
 
