@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import useInterval from "@use-it/interval";
+import Emoji from "a11y-react-emoji";
 
 import "./App.scss";
 import { generateGrid, Grid, takeTurn } from "./game-of-life";
@@ -68,6 +69,20 @@ function App() {
     setIsActive(false);
   };
 
+  const jumpToTurn = (turn: number) => {
+    setTurn(turn);
+    setGrid(history[turn]);
+  };
+
+  const onStart = () => {
+    setIsActive(true);
+    setHistory(history.slice(0, turn + 1));
+  };
+
+  const onStop = () => {
+    setIsActive(false);
+  };
+
   const isInitialState = history.length === 1;
 
   return (
@@ -76,8 +91,8 @@ function App() {
       <h2>Implemented by Tom on the Internet</h2>
       <div>
         <div>
-          <button onClick={() => setIsActive(true)}>Start</button>
-          <button onClick={() => setIsActive(false)}>Stop</button>
+          <button onClick={onStart}>Start</button>
+          <button onClick={onStop}>Stop</button>
           <button onClick={() => reinitialize(height, width)}>
             Reinitialize
           </button>
@@ -128,7 +143,21 @@ function App() {
             />
           </label>
         </div>
-        <div>Turn #: {turn} </div>
+        <div>
+          <button
+            disabled={isActive || turn === 0}
+            onClick={() => jumpToTurn(turn - 1)}
+          >
+            <Emoji symbol="👈" label="back" />
+          </button>
+          Turn #: {turn}
+          <button
+            disabled={isActive || turn === history.length - 1}
+            onClick={() => jumpToTurn(turn + 1)}
+          >
+            <Emoji symbol="👉" label="forward" />
+          </button>
+        </div>
       </div>
 
       <div className="grid">
