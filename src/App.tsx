@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
 import useInterval from "@use-it/interval";
 import Emoji from "a11y-react-emoji";
-
+import React, { useEffect, useRef, useState } from "react";
 import "./App.scss";
-import { generateGrid, Grid, takeTurn, depopulateGrid } from "./game-of-life";
+import { depopulateGrid, generateGrid, Grid, takeTurn } from "./game-of-life";
 
-type Settings = { width: number; height: number; grid: Grid };
+type Settings = { width: number; height: number; gridString: string };
 
 const DEFAULT_WIDTH = 30;
 const DEFAULT_HEIGHT = 15;
@@ -25,7 +24,29 @@ function App() {
   const [isActive, setIsActive] = useState<boolean>(false);
   const firstUpdate = useRef(true);
 
-  const settings: Settings = { width, height, grid: history[0] };
+  const encodeGrid = (grid: Grid): string =>
+    grid.reduce(
+      (acc: string, row: boolean[]) =>
+        acc + row.map((cell) => (cell ? 1 : 0)).join(""),
+      ""
+    );
+
+  const decodeGrid = ({ width, gridString }: Settings): Grid => {
+    const stringRowGrid = gridString.match(
+      new RegExp(".{1," + width + "}", "g")
+    ) as string[];
+
+    return stringRowGrid
+      .map((stringRow) => stringRow.split(""))
+      .map((row) => row.map((cell) => (cell === "1" ? true : false)));
+  };
+
+  const settings: Settings = {
+    width,
+    height,
+    gridString: encodeGrid(history[0]),
+  };
+
   const encodedSettings = btoa(JSON.stringify(settings));
 
   useInterval(() => {
@@ -53,10 +74,13 @@ function App() {
     }
 
     const settings: Settings = JSON.parse(atob(url));
+    const grid = decodeGrid(settings);
+    console.log(grid);
+
     setHeight(settings.height);
     setWidth(settings.width);
-    setGrid(settings.grid);
-    setHistory([settings.grid]);
+    setGrid(grid);
+    setHistory([grid]);
   }, []);
 
   const onSetHeight = (height: number) => {
@@ -102,7 +126,7 @@ function App() {
     setIsActive(false);
   };
 
-  const onDepopulateGrid = (height: number, width: number) => {
+  const onDepopulateGrid = () => {
     const depopulatedGrid = depopulateGrid(grid);
     setGrid(depopulatedGrid);
     setHistory([depopulatedGrid]);
@@ -130,7 +154,7 @@ function App() {
     <>
       <h1>Conway's Game of Life</h1>
       <h2>Implemented by Tom on the Internet</h2>
-      <div>
+      <div style={{ marginBottom: 20 }}>
         <div>
           <button disabled={isActive} onClick={onStart}>
             Start

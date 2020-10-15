@@ -11,6 +11,8 @@
       width: var(--cell-size);
       &.alive {
         background-color: green;
+        // background-color: rgb(0, 200, 0);
+        // box-shadow: 2px 2px 2px 1px rgb(0, 255, 0);
       }
     }
   }
