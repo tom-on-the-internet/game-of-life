@@ -102,6 +102,14 @@ function App() {
     setIsActive(false);
   };
 
+  const onDepopulateGrid = (height: number, width: number) => {
+    const depopulatedGrid = depopulateGrid(grid);
+    setGrid(depopulatedGrid);
+    setHistory([depopulatedGrid]);
+    setTurn(0);
+    setIsActive(false);
+  };
+
   const jumpToTurn = (turn: number) => {
     setTurn(turn);
     setGrid(history[turn]);
@@ -132,14 +140,7 @@ function App() {
           </button>
         </div>
         <div>
-          <button
-            disabled={isActive}
-            onClick={() => {
-              const depopulatedGrid = depopulateGrid(grid);
-              setGrid(depopulatedGrid);
-              setHistory([depopulatedGrid]);
-            }}
-          >
+          <button disabled={isActive} onClick={onDepopulateGrid}>
             Depopulate
           </button>
           <button
