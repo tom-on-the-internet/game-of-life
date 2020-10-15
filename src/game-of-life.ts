@@ -17,6 +17,12 @@ export function takeTurn(grid: Grid): Grid {
   });
 }
 
+export function depopulateGrid(grid: Grid): Grid {
+  return grid.map((row) => {
+    return row.map(() => false);
+  });
+}
+
 function isOutOfBounds(
   rowIndex: number,
   cellIndex: number,

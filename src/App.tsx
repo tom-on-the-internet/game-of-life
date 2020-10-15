@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import useInterval from "@use-it/interval";
 import Emoji from "a11y-react-emoji";
 
 import "./App.scss";
-import { generateGrid, Grid, takeTurn } from "./game-of-life";
+import { generateGrid, Grid, takeTurn, depopulateGrid } from "./game-of-life";
+
+type Settings = { width: number; height: number; grid: Grid };
 
 const DEFAULT_WIDTH = 30;
 const DEFAULT_HEIGHT = 15;
@@ -21,6 +23,10 @@ function App() {
   const [history, setHistory] = useState<Grid[]>([grid]);
   const [delay, setDelay] = useState<number>(DEFAULT_DELAY);
   const [isActive, setIsActive] = useState<boolean>(false);
+  const firstUpdate = useRef(true);
+
+  const settings: Settings = { width, height, grid: history[0] };
+  const encodedSettings = btoa(JSON.stringify(settings));
 
   useInterval(() => {
     if (isActive) {
@@ -30,6 +36,28 @@ function App() {
       setTurn(turn + 1);
     }
   }, delay);
+
+  useEffect(() => {
+    if (firstUpdate.current) {
+      firstUpdate.current = false;
+      return;
+    }
+
+    window.history.pushState({}, "", encodedSettings);
+  }, [encodedSettings]);
+
+  useEffect(() => {
+    const url = window.location.pathname.replace(/\//, "");
+    if (!url) {
+      return;
+    }
+
+    const settings: Settings = JSON.parse(atob(url));
+    setHeight(settings.height);
+    setWidth(settings.width);
+    setGrid(settings.grid);
+    setHistory([settings.grid]);
+  }, []);
 
   const onSetHeight = (height: number) => {
     let newHeight = height;
@@ -43,7 +71,7 @@ function App() {
     }
 
     setHeight(newHeight);
-    reinitialize(newHeight, width);
+    randomDistribution(newHeight, width);
   };
 
   const onSetWidth = (width: number) => {
@@ -58,10 +86,15 @@ function App() {
     }
 
     setWidth(newWidth);
-    reinitialize(height, newWidth);
+    randomDistribution(height, newWidth);
   };
 
-  const reinitialize = (height: number, width: number) => {
+  const onClickCell = (rowIndex: number, colIndex: number) => {
+    grid[rowIndex][colIndex] = !grid[rowIndex][colIndex];
+    setGrid([...grid]);
+  };
+
+  const randomDistribution = (height: number, width: number) => {
     const grid = generateGrid(width, height);
     setGrid(grid);
     setHistory([grid]);
@@ -91,10 +124,29 @@ function App() {
       <h2>Implemented by Tom on the Internet</h2>
       <div>
         <div>
-          <button onClick={onStart}>Start</button>
-          <button onClick={onStop}>Stop</button>
-          <button onClick={() => reinitialize(height, width)}>
-            Reinitialize
+          <button disabled={isActive} onClick={onStart}>
+            Start
+          </button>
+          <button disabled={!isActive} onClick={onStop}>
+            Stop
+          </button>
+        </div>
+        <div>
+          <button
+            disabled={isActive}
+            onClick={() => {
+              const depopulatedGrid = depopulateGrid(grid);
+              setGrid(depopulatedGrid);
+              setHistory([depopulatedGrid]);
+            }}
+          >
+            Depopulate
+          </button>
+          <button
+            disabled={isActive}
+            onClick={() => randomDistribution(height, width)}
+          >
+            Random Distribution
           </button>
         </div>
         <div>
@@ -108,6 +160,8 @@ function App() {
               type="number"
             />
           </label>
+        </div>
+        <div>
           <label>
             Height:
             <input
@@ -160,12 +214,32 @@ function App() {
         </div>
       </div>
 
-      <div className="grid">
+      <div
+        className="grid"
+        onClick={(event: any) => {
+          if (turn !== 0) {
+            return;
+          }
+
+          const dataset: DOMStringMap = event.target.dataset;
+
+          if (
+            dataset.rowIndex === undefined ||
+            dataset.colIndex === undefined
+          ) {
+            return;
+          }
+
+          onClickCell(parseInt(dataset.rowIndex), parseInt(dataset.colIndex));
+        }}
+      >
         {grid.map((row, rowIndex) => (
           <div key={rowIndex} className="row">
             {row.map((isAlive, cellIndex) => (
               <div
                 key={cellIndex}
+                data-row-index={rowIndex}
+                data-col-index={cellIndex}
                 className={`cell ${isAlive ? "alive" : ""}`}
               ></div>
             ))}
