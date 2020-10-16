@@ -139,14 +139,18 @@ function App() {
     const grid = generateGrid(width, height);
     setGrid(grid);
     setHistory([grid]);
-    setTurn(0);
-    setIsActive(false);
   };
 
   const onDepopulateGrid = () => {
     const depopulatedGrid = depopulateGrid(grid);
     setGrid(depopulatedGrid);
     setHistory([depopulatedGrid]);
+  };
+
+  const onResetGrid = () => {
+    const grid = history[0];
+    setGrid(grid);
+    setHistory([grid]);
     setTurn(0);
     setIsActive(false);
   };
@@ -179,13 +183,16 @@ function App() {
           <button disabled={!isActive} onClick={onStop}>
             Stop
           </button>
+          <button disabled={turn === 0 || isActive} onClick={onResetGrid}>
+            Reset
+          </button>
         </div>
         <div>
-          <button disabled={isActive} onClick={onDepopulateGrid}>
+          <button disabled={turn !== 0} onClick={onDepopulateGrid}>
             Depopulate
           </button>
           <button
-            disabled={isActive}
+            disabled={turn !== 0}
             onClick={() => randomDistribution(height, width)}
           >
             Random Distribution
@@ -291,7 +298,7 @@ function App() {
       <div>
         <XYPlot width={700} height={300}>
           <HorizontalGridLines />
-          <LineSeries color="red" data={chartData} />
+          <LineSeries color="green" data={chartData} />
           <XAxis title="Turn" />
           <YAxis title="Population" />
         </XYPlot>
