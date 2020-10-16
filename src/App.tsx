@@ -1,8 +1,22 @@
 import useInterval from "@use-it/interval";
+import {
+  XYPlot,
+  XAxis,
+  YAxis,
+  HorizontalGridLines,
+  LineSeries,
+} from "react-vis";
+
 import Emoji from "a11y-react-emoji";
 import React, { useEffect, useRef, useState } from "react";
 import "./App.scss";
-import { depopulateGrid, generateGrid, Grid, takeTurn } from "./game-of-life";
+import {
+  depopulateGrid,
+  generateGrid,
+  Grid,
+  takeTurn,
+  countLiving,
+} from "./game-of-life";
 
 type Settings = { width: number; height: number; gridString: string };
 
@@ -23,6 +37,9 @@ function App() {
   const [delay, setDelay] = useState<number>(DEFAULT_DELAY);
   const [isActive, setIsActive] = useState<boolean>(false);
   const firstUpdate = useRef(true);
+  const chartData = history.map((grid, index) => {
+    return { x: index, y: countLiving(grid) };
+  });
 
   const encodeGrid = (grid: Grid): string =>
     grid.reduce(
@@ -270,6 +287,14 @@ function App() {
             ))}
           </div>
         ))}
+      </div>
+      <div>
+        <XYPlot width={700} height={300}>
+          <HorizontalGridLines />
+          <LineSeries color="red" data={chartData} />
+          <XAxis title="Turn" />
+          <YAxis title="Population" />
+        </XYPlot>
       </div>
     </>
   );

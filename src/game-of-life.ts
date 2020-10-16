@@ -18,9 +18,18 @@ export function takeTurn(grid: Grid): Grid {
 }
 
 export function depopulateGrid(grid: Grid): Grid {
-  return grid.map((row) => {
-    return row.map(() => false);
-  });
+  return grid.map((row) => row.map(() => false));
+}
+
+export function countLiving(grid: Grid): number {
+  return grid.reduce(
+    (acc: number, current: boolean[]): number =>
+      current.reduce(
+        (acc: number, current: boolean): number => (current ? acc + 1 : acc),
+        0
+      ) + acc,
+    0
+  );
 }
 
 function isOutOfBounds(
