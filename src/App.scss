@@ -4,6 +4,11 @@
   --cell-size: 20px;
 }
 
+html,
+body {
+  font-family: "Roboto", sans-serif;
+}
+
 .grid {
   .row {
     display: flex;
