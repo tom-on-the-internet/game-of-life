@@ -36,6 +36,7 @@ function App() {
   const [history, setHistory] = useState<Grid[]>([grid]);
   const [delay, setDelay] = useState<number>(DEFAULT_DELAY);
   const [isActive, setIsActive] = useState<boolean>(false);
+  const [mouseHold, setMouseHold] = useState<boolean>(false);
   const firstUpdate = useRef(true);
   const chartData = history.map((grid, index) => {
     return { x: index, y: countLiving(grid) };
@@ -130,7 +131,7 @@ function App() {
     randomDistribution(height, newWidth);
   };
 
-  const onClickCell = (rowIndex: number, colIndex: number) => {
+  const onChangeCell = (rowIndex: number, colIndex: number) => {
     grid[rowIndex][colIndex] = !grid[rowIndex][colIndex];
     setGrid([...grid]);
   };
@@ -172,7 +173,7 @@ function App() {
   const isInitialState = history.length === 1;
 
   return (
-    <>
+    <div onMouseUp={() => setMouseHold(false)}>
       <h1>Conway's Game of Life</h1>
       <h2>Implemented by Tom on the Internet</h2>
       <div style={{ marginBottom: 20 }}>
@@ -265,7 +266,7 @@ function App() {
 
       <div
         className="grid"
-        onClick={(event: any) => {
+        onMouseDown={(event: any) => {
           if (turn !== 0) {
             return;
           }
@@ -279,7 +280,8 @@ function App() {
             return;
           }
 
-          onClickCell(parseInt(dataset.rowIndex), parseInt(dataset.colIndex));
+          setMouseHold(true);
+          onChangeCell(parseInt(dataset.rowIndex), parseInt(dataset.colIndex));
         }}
       >
         {grid.map((row, rowIndex) => (
@@ -290,6 +292,13 @@ function App() {
                 data-row-index={rowIndex}
                 data-col-index={cellIndex}
                 className={`cell ${isAlive ? "alive" : ""}`}
+                onMouseEnter={() => {
+                  if (turn !== 0 || !mouseHold) {
+                    return;
+                  }
+
+                  onChangeCell(rowIndex, cellIndex);
+                }}
               ></div>
             ))}
           </div>
@@ -303,7 +312,7 @@ function App() {
           <YAxis title="Population" />
         </XYPlot>
       </div>
-    </>
+    </div>
   );
 }
 
