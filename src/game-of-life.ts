@@ -1,5 +1,6 @@
 export type Grid = boolean[][];
 export type Coordinate = [number, number];
+export type Settings = { width: number; height: number; gridString: string };
 
 export function generateGrid(width: number, height: number): Grid {
   return Array.from(Array(height)).map((_) =>
@@ -83,4 +84,21 @@ function shouldLive(rowIndex: number, cellIndex: number, grid: Grid): boolean {
   }
 
   return isLiving(rowIndex, cellIndex, grid) && countNeighborsLiving === 2;
+}
+export function encodeGrid(grid: Grid): string {
+  return grid.reduce(
+    (acc: string, row: boolean[]) =>
+      acc + row.map((cell) => (cell ? 1 : 0)).join(""),
+    ""
+  );
+}
+
+export function decodeGrid({ width, gridString }: Settings): Grid {
+  const stringRowGrid = gridString.match(
+    new RegExp(".{1," + width + "}", "g")
+  ) as string[];
+
+  return stringRowGrid
+    .map((stringRow) => stringRow.split(""))
+    .map((row) => row.map((cell) => (cell === "1" ? true : false)));
 }

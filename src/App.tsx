@@ -1,31 +1,36 @@
-import useInterval from "@use-it/interval";
 import {
-  XYPlot,
-  XAxis,
-  YAxis,
+  Button,
+  ButtonGroup,
+  Container,
+  Grid as MaterialGrid,
+  Slider,
+  Typography,
+  Link,
+} from "@material-ui/core";
+import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
+import useInterval from "@use-it/interval";
+import React, { useEffect, useRef, useState } from "react";
+import {
   HorizontalGridLines,
   LineSeries,
+  XAxis,
+  XYPlot,
+  YAxis,
 } from "react-vis";
-
-import Emoji from "a11y-react-emoji";
-import React, { useEffect, useRef, useState } from "react";
 import "./App.scss";
 import {
+  countLiving,
   depopulateGrid,
   generateGrid,
   Grid,
   takeTurn,
-  countLiving,
+  encodeGrid,
+  decodeGrid,
+  Settings,
 } from "./game-of-life";
-import {
-  Button,
-  Container,
-  Grid as MaterialGrid,
-  ButtonGroup,
-  Slider,
-} from "@material-ui/core";
 
-type Settings = { width: number; height: number; gridString: string };
+type MouseHold = "alive" | "dead" | null;
 
 const DEFAULT_WIDTH = 30;
 const DEFAULT_HEIGHT = 15;
@@ -41,30 +46,17 @@ function App() {
   const [grid, setGrid] = useState<Grid>(generateGrid(width, height));
   const [turn, setTurn] = useState<number>(0);
   const [history, setHistory] = useState<Grid[]>([grid]);
+  const [populationHistory, setPopulationHistory] = useState<number[]>([
+    countLiving(grid),
+  ]);
   const [delay, setDelay] = useState<number>(DEFAULT_DELAY);
   const [isActive, setIsActive] = useState<boolean>(false);
-  const [mouseHold, setMouseHold] = useState<boolean>(false);
+  const [mouseHold, setMouseHold] = useState<MouseHold>(null);
   const firstUpdate = useRef(true);
-  const chartData = history.map((grid, index) => {
-    return { x: index, y: countLiving(grid) };
-  });
-
-  const encodeGrid = (grid: Grid): string =>
-    grid.reduce(
-      (acc: string, row: boolean[]) =>
-        acc + row.map((cell) => (cell ? 1 : 0)).join(""),
-      ""
-    );
-
-  const decodeGrid = ({ width, gridString }: Settings): Grid => {
-    const stringRowGrid = gridString.match(
-      new RegExp(".{1," + width + "}", "g")
-    ) as string[];
-
-    return stringRowGrid
-      .map((stringRow) => stringRow.split(""))
-      .map((row) => row.map((cell) => (cell === "1" ? true : false)));
-  };
+  const chartData = populationHistory.map((count, index) => ({
+    x: index,
+    y: count,
+  }));
 
   const settings: Settings = {
     width,
@@ -72,16 +64,17 @@ function App() {
     gridString: encodeGrid(history[0]),
   };
 
-  const encodedSettings = btoa(JSON.stringify(settings));
-
   useInterval(() => {
     if (isActive) {
       const nextGrid = takeTurn(grid);
       setHistory([...history, nextGrid]);
+      setPopulationHistory([...populationHistory, countLiving(nextGrid)]);
       setGrid(nextGrid);
       setTurn(turn + 1);
     }
   }, delay);
+
+  const encodedSettings = btoa(JSON.stringify(settings));
 
   useEffect(() => {
     if (firstUpdate.current) {
@@ -104,41 +97,16 @@ function App() {
     setHeight(settings.height);
     setWidth(settings.width);
     setGrid(grid);
+    setPopulationHistory([countLiving(grid)]);
     setHistory([grid]);
   }, []);
 
-  const onSetHeight = (height: number) => {
-    let newHeight = height;
-
-    if (newHeight < MIN_HEIGHT) {
-      newHeight = MIN_HEIGHT;
-    }
-
-    if (newHeight > MAX_HEIGHT) {
-      newHeight = MAX_HEIGHT;
-    }
-
-    setHeight(newHeight);
-    randomDistribution(newHeight, width);
-  };
-
-  const onSetWidth = (width: number) => {
-    let newWidth = width;
-
-    if (newWidth < MIN_WIDTH) {
-      newWidth = MIN_WIDTH;
-    }
-
-    if (newWidth > MAX_WIDTH) {
-      newWidth = MAX_WIDTH;
-    }
-
-    setWidth(newWidth);
-    randomDistribution(height, newWidth);
-  };
-
-  const onChangeCell = (rowIndex: number, colIndex: number) => {
-    grid[rowIndex][colIndex] = !grid[rowIndex][colIndex];
+  const onChangeCell = (
+    rowIndex: number,
+    colIndex: number,
+    value: "alive" | "dead"
+  ) => {
+    grid[rowIndex][colIndex] = value === "alive" ? true : false;
     setGrid([...grid]);
   };
 
@@ -158,6 +126,7 @@ function App() {
     const grid = history[0];
     setGrid(grid);
     setHistory([grid]);
+    setPopulationHistory([countLiving(grid)]);
     setTurn(0);
     setIsActive(false);
   };
@@ -179,153 +148,137 @@ function App() {
   const isInitialState = history.length === 1;
 
   return (
-    <Container>
-      <MaterialGrid container spacing={3}>
-        <MaterialGrid item xs={12}>
-          <div onMouseUp={() => setMouseHold(false)}>
-            <h1>Conway's Game of Life</h1>
-            <h2>Implemented by Tom on the Internet</h2>
-            <div style={{ marginBottom: 20 }}>
-              <div>
-                <ButtonGroup
-                  variant="contained"
-                  color="primary"
-                  aria-label="contained primary button group"
+    <Container
+      maxWidth="xl"
+      onMouseUp={() => {
+        setMouseHold(null);
+      }}
+    >
+      <div style={{ textAlign: "center" }}>
+        <h1>Conway's Game of Life</h1>
+        <Link href="https://tomontheinternet.com">Tom on the Internet</Link>
+      </div>
+      <MaterialGrid container spacing={3} direction="row" justify="center">
+        <MaterialGrid item xs={4}>
+          <MaterialGrid container spacing={3} direction="row" justify="center">
+            <MaterialGrid item xs={6}>
+              <ButtonGroup
+                variant="contained"
+                color="primary"
+                aria-label="contained primary button group"
+              >
+                <Button disabled={isActive} onClick={onStart}>
+                  Start
+                </Button>
+                <Button disabled={!isActive} onClick={onStop}>
+                  Stop
+                </Button>
+                <Button disabled={turn === 0 || isActive} onClick={onResetGrid}>
+                  Reset
+                </Button>
+              </ButtonGroup>
+            </MaterialGrid>
+            <MaterialGrid item xs={6}>
+              <ButtonGroup
+                variant="contained"
+                color="default"
+                aria-label="contained primary button group"
+              >
+                <Button
+                  disabled={turn !== 0}
+                  onClick={() => randomDistribution(height, width)}
                 >
-                  <Button disabled={isActive} onClick={onStart}>
-                    Start
-                  </Button>
-                  <Button disabled={!isActive} onClick={onStop}>
-                    Stop
-                  </Button>
-                  <Button
-                    disabled={turn === 0 || isActive}
-                    onClick={onResetGrid}
-                  >
-                    Reset
-                  </Button>
-                </ButtonGroup>
-              </div>
-              <div>
-                <ButtonGroup
-                  color="primary"
-                  aria-label="contained primary button group"
-                >
-                  <Button disabled={turn !== 0} onClick={onDepopulateGrid}>
-                    Depopulate
-                  </Button>
-                  <Button
-                    disabled={turn !== 0}
-                    onClick={() => randomDistribution(height, width)}
-                  >
-                    Random Distribution
-                  </Button>
-                </ButtonGroup>
-              </div>
-              <div>
-                <label>
-                  Delay (ms):
-                  <Slider
-                    aria-labelledby="discrete-slider"
-                    valueLabelDisplay="on"
-                    min={50}
-                    max={1000}
-                    step={null}
-                    marks={[
-                      {
-                        value: 50,
-                      },
-                      {
-                        value: 100,
-                      },
-                      {
-                        value: 200,
-                      },
-                      {
-                        value: 500,
-                      },
-                      {
-                        value: 1000,
-                      },
-                    ]}
-                    onChange={(_, newDelay) => {
-                      if (Array.isArray(newDelay)) {
-                        return;
-                      }
-                      setDelay(newDelay);
-                    }}
-                    value={delay}
-                  />
-                  {/* <input */}
-                  {/*   value={delay.toString()} */}
-                  {/*   onChange={(event) => */}
-                  {/*     setDelay(parseInt(event.target.value.replace(/\D/, ""))) */}
-                  {/*   } */}
-                  {/*   type="number" */}
-                  {/* /> */}
-                </label>
-              </div>
-              <div>
-                <label>
-                  Height:
-                  <input
-                    disabled={!isInitialState}
-                    value={height.toString()}
-                    onChange={(event) => {
-                      let height = parseInt(
-                        event.target.value.replace(/\D/, "")
-                      );
-
-                      if (Number.isNaN(height)) {
-                        height = MIN_HEIGHT;
-                      }
-
-                      onSetHeight(height);
-                    }}
-                    type="number"
-                  />
-                </label>
-                <label>
-                  Width:
-                  <input
-                    disabled={!isInitialState}
-                    value={width.toString()}
-                    onChange={(event) => {
-                      let width = parseInt(
-                        event.target.value.replace(/\D/, "")
-                      );
-
-                      if (Number.isNaN(width)) {
-                        width = MIN_WIDTH;
-                      }
-
-                      onSetWidth(width);
-                    }}
-                    type="number"
-                  />
-                </label>
-              </div>
-              <div>
-                <button
-                  disabled={isActive || turn === 0}
-                  onClick={() => jumpToTurn(turn - 1)}
-                >
-                  <Emoji symbol="👈" label="back" />
-                </button>
-                Turn #: {turn}
-                <button
-                  disabled={isActive || turn === history.length - 1}
-                  onClick={() => jumpToTurn(turn + 1)}
-                >
-                  <Emoji symbol="👉" label="forward" />
-                </button>
-              </div>
-            </div>
+                  Random
+                </Button>
+                <Button disabled={turn !== 0} onClick={onDepopulateGrid}>
+                  Depopulate
+                </Button>
+              </ButtonGroup>
+            </MaterialGrid>
+          </MaterialGrid>
+          <div>
+            <Typography gutterBottom>Turn Delay (ms)</Typography>
+            <Slider
+              aria-labelledby="discrete-slider"
+              valueLabelDisplay="auto"
+              min={50}
+              max={1000}
+              step={50}
+              onChange={(_, newDelay) => {
+                if (Array.isArray(newDelay)) {
+                  return;
+                }
+                setDelay(newDelay);
+              }}
+              value={delay}
+            />
+          </div>
+          <div>
+            <Button
+              disabled={isActive || turn === 0}
+              onClick={() => jumpToTurn(turn - 1)}
+              startIcon={<ArrowBackIcon />}
+            >
+              Prev
+            </Button>
+            {turn}
+            <Button
+              disabled={isActive || turn === history.length - 1}
+              onClick={() => jumpToTurn(turn + 1)}
+              endIcon={<ArrowForwardIcon />}
+            >
+              Next
+            </Button>
           </div>
         </MaterialGrid>
-        <MaterialGrid item xs={6}>
+        <MaterialGrid item xs={4}>
+          <Typography gutterBottom>Width</Typography>
+          <Slider
+            disabled={!isInitialState}
+            aria-labelledby="discrete-slider"
+            valueLabelDisplay="auto"
+            min={MIN_WIDTH}
+            max={MAX_WIDTH}
+            step={1}
+            onChange={(_, newWidth) => {
+              if (Array.isArray(newWidth)) {
+                return;
+              }
+              setWidth(newWidth);
+              randomDistribution(height, newWidth);
+            }}
+            value={width}
+          />
+          <Typography gutterBottom>Height</Typography>
+          <Slider
+            disabled={!isInitialState}
+            aria-labelledby="discrete-slider"
+            valueLabelDisplay="auto"
+            min={MIN_HEIGHT}
+            max={MAX_HEIGHT}
+            step={1}
+            onChange={(_, newHeight) => {
+              if (Array.isArray(newHeight)) {
+                return;
+              }
+              setHeight(newHeight);
+              randomDistribution(newHeight, width);
+            }}
+            value={height}
+          />
+        </MaterialGrid>
+        <MaterialGrid item xs={4}>
+          <XYPlot width={225} height={150}>
+            <HorizontalGridLines />
+            <LineSeries color="green" data={chartData} />
+            <XAxis title="Turn" />
+            <YAxis title="Population" />
+          </XYPlot>
+        </MaterialGrid>
+      </MaterialGrid>
+      <MaterialGrid container direction="row" justify="center">
+        <MaterialGrid item xs className="grid">
           <div
-            className="grid"
             onMouseDown={(event: any) => {
               if (turn !== 0) {
                 return;
@@ -340,11 +293,12 @@ function App() {
                 return;
               }
 
-              setMouseHold(true);
-              onChangeCell(
-                parseInt(dataset.rowIndex),
-                parseInt(dataset.colIndex)
-              );
+              const rowIndex = parseInt(dataset.rowIndex);
+              const cellIndex = parseInt(dataset.colIndex);
+
+              const value = grid[rowIndex][cellIndex] ? "dead" : "alive";
+              setMouseHold(value);
+              onChangeCell(rowIndex, cellIndex, value);
             }}
           >
             {grid.map((row, rowIndex) => (
@@ -356,26 +310,16 @@ function App() {
                     data-col-index={cellIndex}
                     className={`cell ${isAlive ? "alive" : ""}`}
                     onMouseEnter={() => {
-                      if (turn !== 0 || !mouseHold) {
+                      if (turn !== 0 || mouseHold === null) {
                         return;
                       }
 
-                      onChangeCell(rowIndex, cellIndex);
+                      onChangeCell(rowIndex, cellIndex, mouseHold);
                     }}
                   ></div>
                 ))}
               </div>
             ))}
-          </div>
-        </MaterialGrid>
-        <MaterialGrid item xs={6}>
-          <div>
-            <XYPlot width={700} height={300}>
-              <HorizontalGridLines />
-              <LineSeries color="green" data={chartData} />
-              <XAxis title="Turn" />
-              <YAxis title="Population" />
-            </XYPlot>
           </div>
         </MaterialGrid>
       </MaterialGrid>
