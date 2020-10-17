@@ -32,9 +32,9 @@ import {
 
 type MouseHold = "alive" | "dead" | null;
 
-const DEFAULT_WIDTH = 30;
-const DEFAULT_HEIGHT = 15;
-const DEFAULT_DELAY = 100;
+const DEFAULT_WIDTH = 60;
+const DEFAULT_HEIGHT = 20;
+const DEFAULT_DELAY = 300;
 const MIN_HEIGHT = 3;
 const MIN_WIDTH = 3;
 const MAX_HEIGHT = 50;
@@ -164,23 +164,6 @@ function App() {
             <MaterialGrid item xs={6}>
               <ButtonGroup
                 variant="contained"
-                color="primary"
-                aria-label="contained primary button group"
-              >
-                <Button disabled={isActive} onClick={onStart}>
-                  Start
-                </Button>
-                <Button disabled={!isActive} onClick={onStop}>
-                  Stop
-                </Button>
-                <Button disabled={turn === 0 || isActive} onClick={onResetGrid}>
-                  Reset
-                </Button>
-              </ButtonGroup>
-            </MaterialGrid>
-            <MaterialGrid item xs={6}>
-              <ButtonGroup
-                variant="contained"
                 color="default"
                 aria-label="contained primary button group"
               >
@@ -192,6 +175,23 @@ function App() {
                 </Button>
                 <Button disabled={turn !== 0} onClick={onDepopulateGrid}>
                   Depopulate
+                </Button>
+              </ButtonGroup>
+            </MaterialGrid>
+            <MaterialGrid item xs={6}>
+              <ButtonGroup
+                variant="contained"
+                color="primary"
+                aria-label="contained primary button group"
+              >
+                <Button disabled={isActive} onClick={onStart}>
+                  Start
+                </Button>
+                <Button disabled={!isActive} onClick={onStop}>
+                  Stop
+                </Button>
+                <Button disabled={turn === 0 || isActive} onClick={onResetGrid}>
+                  Reset
                 </Button>
               </ButtonGroup>
             </MaterialGrid>
