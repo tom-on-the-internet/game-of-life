@@ -277,8 +277,9 @@ function App() {
         </MaterialGrid>
       </MaterialGrid>
       <MaterialGrid container direction="row" justify="center">
-        <MaterialGrid item xs className="grid">
+        <MaterialGrid item xs>
           <div
+            style={{ userSelect: "none" }}
             onMouseDown={(event: any) => {
               if (turn !== 0) {
                 return;
@@ -294,27 +295,32 @@ function App() {
               }
 
               const rowIndex = parseInt(dataset.rowIndex);
-              const cellIndex = parseInt(dataset.colIndex);
+              const colIndex = parseInt(dataset.colIndex);
 
-              const value = grid[rowIndex][cellIndex] ? "dead" : "alive";
+              const value = grid[rowIndex][colIndex] ? "dead" : "alive";
               setMouseHold(value);
-              onChangeCell(rowIndex, cellIndex, value);
+              onChangeCell(rowIndex, colIndex, value);
             }}
           >
             {grid.map((row, rowIndex) => (
-              <div key={rowIndex} className="row">
-                {row.map((isAlive, cellIndex) => (
+              <div key={rowIndex} style={{ display: "flex" }}>
+                {row.map((isAlive, colIndex) => (
                   <div
-                    key={cellIndex}
+                    style={{
+                      border: "solid 1px grey",
+                      height: "20px",
+                      width: "20px",
+                      backgroundColor: isAlive ? "green" : "inherit",
+                    }}
+                    key={colIndex}
                     data-row-index={rowIndex}
-                    data-col-index={cellIndex}
-                    className={`cell ${isAlive ? "alive" : ""}`}
+                    data-col-index={colIndex}
                     onMouseEnter={() => {
                       if (turn !== 0 || mouseHold === null) {
                         return;
                       }
 
-                      onChangeCell(rowIndex, cellIndex, mouseHold);
+                      onChangeCell(rowIndex, colIndex, mouseHold);
                     }}
                   ></div>
                 ))}
