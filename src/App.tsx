@@ -1,3 +1,5 @@
+import copy from "copy-to-clipboard";
+
 import {
   Button,
   ButtonGroup,
@@ -6,6 +8,7 @@ import {
   Slider,
   Typography,
   Link,
+  Snackbar,
 } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
@@ -52,6 +55,9 @@ function App() {
   const [delay, setDelay] = useState<number>(DEFAULT_DELAY);
   const [isActive, setIsActive] = useState<boolean>(false);
   const [mouseHold, setMouseHold] = useState<MouseHold>(null);
+  const [toast, setToast] = useState<boolean>(false);
+
+  const url = window.location.pathname.replace(/\//, "");
   const firstUpdate = useRef(true);
   const chartData = populationHistory.map((count, index) => ({
     x: index,
@@ -86,7 +92,6 @@ function App() {
   }, [encodedSettings]);
 
   useEffect(() => {
-    const url = window.location.pathname.replace(/\//, "");
     if (!url) {
       return;
     }
@@ -159,7 +164,34 @@ function App() {
       </div>
       <div style={{ textAlign: "center" }}>
         <h1>Conway's Game of Life</h1>
-        <Link href="https://tomontheinternet.com">Tom on the Internet</Link>
+        <div>
+          <Link href="https://tomontheinternet.com">Tom on the Internet</Link>
+        </div>
+        <div>
+          {url && (
+            <Button
+              onClick={() => {
+                if (!url) {
+                  return;
+                }
+                copy(url);
+                setToast(true);
+              }}
+            >
+              Share this grid
+            </Button>
+          )}
+          <Snackbar
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            open={toast}
+            autoHideDuration={3000}
+            onClose={() => setToast(false)}
+            message="Grid link copied to clipboard"
+          />
+        </div>
       </div>
       <MaterialGrid container spacing={3} direction="row" justify="center">
         <MaterialGrid item xs={4}>
