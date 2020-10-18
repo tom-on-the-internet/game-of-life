@@ -154,6 +154,9 @@ function App() {
         setMouseHold(null);
       }}
     >
+      <div className="mobile-only">
+        This is better viewed on a large screen. Sorry!
+      </div>
       <div style={{ textAlign: "center" }}>
         <h1>Conway's Game of Life</h1>
         <Link href="https://tomontheinternet.com">Tom on the Internet</Link>

@@ -4,3 +4,13 @@ html,
 body {
   font-family: "Roboto", sans-serif;
 }
+
+.mobile-only {
+  display: none;
+  text-align: center;
+  font-size: 2em;
+  color: hotpink;
+  @media only screen and (max-width: 1200px) {
+    display: block;
+  }
+}
