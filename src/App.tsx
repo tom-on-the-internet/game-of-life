@@ -56,7 +56,6 @@ function App() {
   const [mouseHold, setMouseHold] = useState<MouseHold>(null);
   const [toast, setToast] = useState<boolean>(false);
 
-  const url = window.location.pathname.replace(/\//, "");
   const firstUpdate = useRef(true);
   const chartData = populationHistory.map((count, index) => ({
     x: index,
@@ -203,13 +202,10 @@ function App() {
           <Button disabled={turn !== 0} onClick={onDepopulateGrid}>
             Depopulate
           </Button>
-          {url && (
+          {window.location.pathname.replace(/\//, "") && (
             <Button
               onClick={() => {
-                if (!url) {
-                  return;
-                }
-                copy(url);
+                copy(window.location.href);
                 setToast(true);
               }}
             >
