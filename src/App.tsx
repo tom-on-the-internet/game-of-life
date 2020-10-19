@@ -159,15 +159,50 @@ function App() {
         setMouseHold(null);
       }}
     >
+      <Snackbar
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        open={toast}
+        autoHideDuration={3000}
+        onClose={() => setToast(false)}
+        message="Grid link copied to clipboard"
+      />
       <div className="mobile-only">
         This is better viewed on a large screen. Sorry!
       </div>
-      <div style={{ textAlign: "center" }}>
-        <h1>Conway's Game of Life</h1>
-        <div>
-          <Link href="https://tomontheinternet.com">Tom on the Internet</Link>
-        </div>
-        <div>
+      <MaterialGrid container spacing={5}>
+        <MaterialGrid item xs={3}>
+          <h1>Conway's Game of Life</h1>
+          <div>
+            <Link href="https://tomontheinternet.com">Tom on the Internet</Link>
+          </div>
+        </MaterialGrid>
+        <MaterialGrid item xs={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            disabled={isActive}
+            onClick={onStart}
+          >
+            Start
+          </Button>
+          <Button disabled={!isActive} onClick={onStop}>
+            Stop
+          </Button>
+          <Button disabled={turn === 0 || isActive} onClick={onResetGrid}>
+            Reset
+          </Button>
+          <Button
+            disabled={turn !== 0}
+            onClick={() => randomDistribution(height, width)}
+          >
+            Random
+          </Button>
+          <Button disabled={turn !== 0} onClick={onDepopulateGrid}>
+            Depopulate
+          </Button>
           {url && (
             <Button
               onClick={() => {
@@ -181,92 +216,23 @@ function App() {
               Share this grid
             </Button>
           )}
-          <Snackbar
-            anchorOrigin={{
-              vertical: "top",
-              horizontal: "right",
-            }}
-            open={toast}
-            autoHideDuration={3000}
-            onClose={() => setToast(false)}
-            message="Grid link copied to clipboard"
-          />
-        </div>
-      </div>
-      <MaterialGrid container spacing={3} direction="row" justify="center">
-        <MaterialGrid item xs={6}>
-          <MaterialGrid container spacing={3} direction="row" justify="center">
-            <MaterialGrid item xs={6}>
-              <ButtonGroup
-                variant="contained"
-                color="default"
-                aria-label="contained primary button group"
-              >
-                <Button
-                  disabled={turn !== 0}
-                  onClick={() => randomDistribution(height, width)}
-                >
-                  Random
-                </Button>
-                <Button disabled={turn !== 0} onClick={onDepopulateGrid}>
-                  Depopulate
-                </Button>
-              </ButtonGroup>
-            </MaterialGrid>
-            <MaterialGrid item xs={6}>
-              <ButtonGroup
-                variant="contained"
-                color="primary"
-                aria-label="contained primary button group"
-              >
-                <Button disabled={isActive} onClick={onStart}>
-                  Start
-                </Button>
-                <Button disabled={!isActive} onClick={onStop}>
-                  Stop
-                </Button>
-                <Button disabled={turn === 0 || isActive} onClick={onResetGrid}>
-                  Reset
-                </Button>
-              </ButtonGroup>
-            </MaterialGrid>
-          </MaterialGrid>
-          <div>
-            <Typography gutterBottom>Turn Delay (ms)</Typography>
-            <Slider
-              aria-labelledby="discrete-slider"
-              valueLabelDisplay="auto"
-              min={50}
-              max={1000}
-              step={50}
-              onChange={(_, newDelay) => {
-                if (Array.isArray(newDelay)) {
-                  return;
-                }
-                setDelay(newDelay);
-              }}
-              value={delay}
-            />
-          </div>
-          <div>
-            <Button
-              disabled={isActive || turn === 0}
-              onClick={() => jumpToTurn(turn - 1)}
-              startIcon={<ArrowBackIcon />}
-            >
-              Prev
-            </Button>
-            {turn}
-            <Button
-              disabled={isActive || turn === history.length - 1}
-              onClick={() => jumpToTurn(turn + 1)}
-              endIcon={<ArrowForwardIcon />}
-            >
-              Next
-            </Button>
-          </div>
         </MaterialGrid>
         <MaterialGrid item xs={2}>
+          <Typography gutterBottom>Turn Delay (ms)</Typography>
+          <Slider
+            aria-labelledby="discrete-slider"
+            valueLabelDisplay="auto"
+            min={50}
+            max={1000}
+            step={50}
+            onChange={(_, newDelay) => {
+              if (Array.isArray(newDelay)) {
+                return;
+              }
+              setDelay(newDelay);
+            }}
+            value={delay}
+          />
           <Typography gutterBottom>Width</Typography>
           <Slider
             disabled={!isInitialState}
@@ -302,16 +268,33 @@ function App() {
             value={height}
           />
         </MaterialGrid>
-        <MaterialGrid item xs={4}>
-          <XYPlot width={225} height={150}>
+        <MaterialGrid item xs={5}>
+          <XYPlot width={325} height={150}>
             <HorizontalGridLines />
             <LineSeries color="green" data={chartData} />
             <XAxis title="Turn" />
             <YAxis title="Population" />
           </XYPlot>
+          <div>
+            <Button
+              disabled={isActive || turn === 0}
+              onClick={() => jumpToTurn(turn - 1)}
+              startIcon={<ArrowBackIcon />}
+            >
+              Prev
+            </Button>
+            {turn}
+            <Button
+              disabled={isActive || turn === history.length - 1}
+              onClick={() => jumpToTurn(turn + 1)}
+              endIcon={<ArrowForwardIcon />}
+            >
+              Next
+            </Button>
+          </div>
         </MaterialGrid>
       </MaterialGrid>
-      <MaterialGrid container direction="row" justify="center">
+      <MaterialGrid container>
         <MaterialGrid item xs>
           <div
             style={{ userSelect: "none" }}
