@@ -1,18 +1,17 @@
-import copy from "copy-to-clipboard";
-
 import {
   Button,
   ButtonGroup,
   Container,
   Grid as MaterialGrid,
-  Slider,
-  Typography,
   Link,
+  Slider,
   Snackbar,
+  Typography,
 } from "@material-ui/core";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import ArrowForwardIcon from "@material-ui/icons/ArrowForward";
 import useInterval from "@use-it/interval";
+import copy from "copy-to-clipboard";
 import React, { useEffect, useRef, useState } from "react";
 import {
   HorizontalGridLines,
@@ -24,13 +23,13 @@ import {
 import "./App.scss";
 import {
   countLiving,
+  decodeGrid,
   depopulateGrid,
+  encodeGrid,
   generateGrid,
   Grid,
-  takeTurn,
-  encodeGrid,
-  decodeGrid,
   Settings,
+  takeTurn,
 } from "./game-of-life";
 
 type MouseHold = "alive" | "dead" | null;
@@ -92,6 +91,8 @@ function App() {
   }, [encodedSettings]);
 
   useEffect(() => {
+    const url = window.location.pathname.replace(/\//, "");
+
     if (!url) {
       return;
     }
@@ -153,8 +154,7 @@ function App() {
   const isInitialState = history.length === 1;
 
   return (
-    <Container
-      maxWidth="xl"
+    <div
       onMouseUp={() => {
         setMouseHold(null);
       }}
@@ -194,7 +194,7 @@ function App() {
         </div>
       </div>
       <MaterialGrid container spacing={3} direction="row" justify="center">
-        <MaterialGrid item xs={4}>
+        <MaterialGrid item xs={6}>
           <MaterialGrid container spacing={3} direction="row" justify="center">
             <MaterialGrid item xs={6}>
               <ButtonGroup
@@ -266,7 +266,7 @@ function App() {
             </Button>
           </div>
         </MaterialGrid>
-        <MaterialGrid item xs={4}>
+        <MaterialGrid item xs={2}>
           <Typography gutterBottom>Width</Typography>
           <Slider
             disabled={!isInitialState}
@@ -364,7 +364,7 @@ function App() {
           </div>
         </MaterialGrid>
       </MaterialGrid>
-    </Container>
+    </div>
   );
 }
 
