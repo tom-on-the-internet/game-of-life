@@ -1,7 +1,5 @@
 import {
   Button,
-  ButtonGroup,
-  Container,
   Grid as MaterialGrid,
   Link,
   Slider,
@@ -78,7 +76,7 @@ function App() {
     }
   }, delay);
 
-  const encodedSettings = btoa(JSON.stringify(settings));
+  const encodedSettings = encodeURIComponent(JSON.stringify(settings));
 
   useEffect(() => {
     if (firstUpdate.current) {
@@ -96,7 +94,7 @@ function App() {
       return;
     }
 
-    const settings: Settings = JSON.parse(atob(url));
+    const settings: Settings = JSON.parse(decodeURIComponent(url));
     const grid = decodeGrid(settings);
 
     setHeight(settings.height);
