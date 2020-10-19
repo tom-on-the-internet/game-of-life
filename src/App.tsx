@@ -111,18 +111,22 @@ function App() {
   ) => {
     grid[rowIndex][colIndex] = value === "alive" ? true : false;
     setGrid([...grid]);
+    setHistory([grid]);
+    setPopulationHistory([countLiving(grid)]);
   };
 
   const randomDistribution = (height: number, width: number) => {
     const grid = generateGrid(width, height);
     setGrid(grid);
     setHistory([grid]);
+    setPopulationHistory([countLiving(grid)]);
   };
 
   const onDepopulateGrid = () => {
     const depopulatedGrid = depopulateGrid(grid);
     setGrid(depopulatedGrid);
     setHistory([depopulatedGrid]);
+    setPopulationHistory([countLiving(depopulatedGrid)]);
   };
 
   const onResetGrid = () => {
@@ -142,6 +146,7 @@ function App() {
   const onStart = () => {
     setIsActive(true);
     setHistory(history.slice(0, turn + 1));
+    setPopulationHistory(populationHistory.slice(0, turn + 1));
   };
 
   const onStop = () => {
